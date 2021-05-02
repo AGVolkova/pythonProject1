@@ -229,5 +229,5 @@ def String_from_paired_reads(Graph, k, d): # Сюда подставлять г�
             print('there is no string')
     print(PathToGenome(Prefixes)+PathToGenome(Suffixes)[-(k+d):])
 
-print(DeBruijn(['ATG', 'ATG', 'TGT', 'TGG', 'CAT', 'GGA', 'GAT', 'AGA']))
+
 print(Eulerian_Path(DeBruijn(['ATG', 'ATG', 'TGT', 'TGG', 'CAT', 'GGA', 'GAT', 'AGA'])))
