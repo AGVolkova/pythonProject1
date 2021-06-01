@@ -1,9 +1,10 @@
 import random
+import numpy as np
+import pandas as pd
+f=open('C:/Users/av/Desktop/Bioinformatics/2/dataset_205_5 (1).txt')
 
-f=open('C:/Users/AVolkova/Desktop/Биоинформатика/dataset_204_16 (2).txt')
-
-print(f)
-Dataset=f.read().splitlines()[1:]
+#print(f)
+Data=f.read().splitlines()
 #print(Dataset)
 
 def StringComposition(S, k): #разбивает строку S на кусочки длины k, накладывающиеся друг на друга одним элементом
@@ -36,7 +37,18 @@ def Overlap(Patterns): #Среди кучи кусочков находит пе
             print(i+'->'+','.join(spisok))
     return answer
 
-#print(Overlap(['ATGC', 'TGCA', 'TGGG', 'GCAA', 'TGCC']))
+def All_Overlap(Patterns): #Среди кучи кусочков находит пересечения и представляет в виде ААT->ATG, ATC
+    answer=[]
+    for i in Patterns:
+        spisok=[]
+        for j in Patterns:
+            if i[1:]==j[:-1]:
+                spisok.append(j)
+        if spisok:
+            answer.append(i+'->'+','.join(spisok))
+            print(i+'->'+','.join(spisok))
+    return answer
+print(All_Overlap(['ATG', 'ATG', 'TGT', 'TGG', 'CAT', 'GGA', 'GAT', 'AGA']))
 
 
 def DeBruijnGraph(Text, k): # Строку представлет в виде пересекающихся кусочков длины К-1
@@ -230,4 +242,73 @@ def String_from_paired_reads(Graph, k, d): # Сюда подставлять г�
     print(PathToGenome(Prefixes)+PathToGenome(Suffixes)[-(k+d):])
 
 
-print(Eulerian_Path(DeBruijn(['ATG', 'ATG', 'TGT', 'TGG', 'CAT', 'GGA', 'GAT', 'AGA'])))
+
+def Find_contigs(Data):
+    Dataset=All_Overlap(Data)
+    dictionary1={}
+    dictionary2={}
+    keys=[]
+    values=[]
+    for a in Dataset:
+         u, v = a.split('->')
+         v=list(set(v.split(',')))
+         print(v)
+         keys.append(u)
+         sp = []
+         for i in v:
+             if i not in sp:
+                 sp.append(i)
+             print(sp)
+         values.append(','.join(sp))
+         if u in dictionary1.keys():
+             dictionary1[u] = dictionary1[u] + v
+         else:
+             dictionary1[u] = v
+
+    values=(','.join(values)).split(',')
+    print(dictionary1)
+    vse_uzly=Data
+    for i in vse_uzly:
+        if i not in dictionary1.keys():
+            dictionary2[i]=(0, values.count(i))
+        else:
+            dictionary2[i]=(len(dictionary1[i]), values.count(i))
+    print(dictionary2)
+    values=(','.join(values)).split(',')
+    Single_in_single_out=[i for i in Data if dictionary2[i][0]==1 and dictionary2[i][1] == 1 and i[:-1]!=i[1:]]
+    Non_branching=[]
+    Last=[i for i in Data if dictionary2[i][0]==0]
+    Used_last=[]
+    for i in Data:
+        if i not in Single_in_single_out and dictionary2[i][0]>0:
+            for j in dictionary1[i]:
+                Nonbranchingpath = i
+                while j in Single_in_single_out:
+                    Nonbranchingpath=Nonbranchingpath+j[-1]
+                    j=dictionary1[j].copy().pop()
+                if j in Last and len(dictionary1[i])==1:
+                    Non_branching.append(Nonbranchingpath+j[-1])
+                    Used_last.append(j)
+                else:
+                    Non_branching.append(Nonbranchingpath)
+                break
+    for i in Last:
+        if i not in Used_last:
+            Non_branching.append(i)
+    for i in Single_in_single_out:
+        Cycle=[]
+        Cycle.append(i)
+
+        while dictionary1[i].copy().pop() in Single_in_single_out:
+            i=dictionary1[i].copy().pop()
+            Cycle.append(i)
+
+            if dictionary1[i].copy().pop() in Cycle:
+                Non_branching.append(PathToGenome(Cycle))
+                break
+        break
+
+    for i in Non_branching:
+        print(i)
+
+
